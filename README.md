@@ -198,13 +198,6 @@ society-management-platform/
 
 ## Getting Started
 
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/AdvaithJawaji/Society-Management-Resident-Services-Platform-with-Distributed-Backend-Architecture.git
-cd society-management-platform
-```
-
 ### 2. Install frontend dependencies
 
 ```bash
