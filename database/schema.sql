@@ -1,0 +1,126 @@
+CREATE DATABASE IF NOT EXISTS society_management;
+USE society_management;
+
+CREATE TABLE roles (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    role_name VARCHAR(20) NOT NULL UNIQUE
+);
+
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    role_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE RESTRICT
+);
+
+CREATE TABLE flats (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    flat_number VARCHAR(10) NOT NULL UNIQUE,
+    block VARCHAR(10) NOT NULL,
+    floor INT NOT NULL,
+    type VARCHAR(20) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE residents (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL UNIQUE,
+    flat_id INT NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    phone VARCHAR(20) NOT NULL UNIQUE,
+    email VARCHAR(100),
+    move_in_date DATE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (flat_id) REFERENCES flats(id) ON DELETE RESTRICT
+);
+
+CREATE TABLE maintenance_bills (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    flat_id INT NOT NULL,
+    billing_month DATE NOT NULL,
+    amount DECIMAL(10, 2) NOT NULL,
+    due_date DATE NOT NULL,
+    status ENUM('UNPAID', 'PAID', 'OVERDUE', 'CANCELLED') DEFAULT 'UNPAID',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(flat_id, billing_month),
+    FOREIGN KEY (flat_id) REFERENCES flats(id) ON DELETE RESTRICT
+);
+
+CREATE TABLE payments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    bill_id INT NOT NULL,
+    resident_id INT NOT NULL,
+    amount DECIMAL(10, 2) NOT NULL,
+    payment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    payment_method VARCHAR(50),
+    transaction_ref VARCHAR(100) UNIQUE,
+    FOREIGN KEY (bill_id) REFERENCES maintenance_bills(id) ON DELETE RESTRICT,
+    FOREIGN KEY (resident_id) REFERENCES residents(id) ON DELETE RESTRICT
+);
+
+CREATE TABLE visitors (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    phone VARCHAR(20) NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE visitor_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    visitor_id INT NOT NULL,
+    flat_id INT NOT NULL,
+    purpose VARCHAR(255) NOT NULL,
+    expected_time DATETIME,
+    entry_time DATETIME,
+    exit_time DATETIME,
+    status ENUM('EXPECTED', 'CHECKED_IN', 'CHECKED_OUT', 'CANCELLED') DEFAULT 'EXPECTED',
+    recorded_by INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (visitor_id) REFERENCES visitors(id) ON DELETE RESTRICT,
+    FOREIGN KEY (flat_id) REFERENCES flats(id) ON DELETE RESTRICT,
+    FOREIGN KEY (recorded_by) REFERENCES users(id) ON DELETE SET NULL
+);
+
+CREATE TABLE complaints (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    resident_id INT NOT NULL,
+    flat_id INT NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    category VARCHAR(50) NOT NULL,
+    description TEXT NOT NULL,
+    priority ENUM('LOW', 'MEDIUM', 'HIGH', 'CRITICAL') DEFAULT 'LOW',
+    status ENUM('OPEN', 'IN_PROGRESS', 'RESOLVED', 'REJECTED') DEFAULT 'OPEN',
+    assigned_to INT,
+    resolved_date DATETIME,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (resident_id) REFERENCES residents(id) ON DELETE RESTRICT,
+    FOREIGN KEY (flat_id) REFERENCES flats(id) ON DELETE RESTRICT,
+    FOREIGN KEY (assigned_to) REFERENCES users(id) ON DELETE SET NULL
+);
+
+CREATE TABLE notices (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    content TEXT NOT NULL,
+    author_id INT NOT NULL,
+    publish_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    expiry_date DATETIME,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE RESTRICT
+);
+
+CREATE TABLE notifications (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    type ENUM('NOTICE', 'PAYMENT_REMINDER', 'COMPLAINT_UPDATE', 'VISITOR_ALERT', 'SYSTEM_ALERT') NOT NULL,
+    message TEXT NOT NULL,
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
