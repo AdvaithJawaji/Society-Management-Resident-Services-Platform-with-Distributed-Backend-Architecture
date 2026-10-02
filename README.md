@@ -198,14 +198,14 @@ society-management-platform/
 
 ## Getting Started
 
-### 2. Install frontend dependencies
+### 1. Install frontend dependencies
 
 ```bash
 cd frontend
 npm install
 ```
 
-### 3. Install backend service dependencies
+### 2. Install backend service dependencies
 
 ```bash
 cd ../services/auth-service
@@ -230,7 +230,7 @@ cd ../analytics-service
 npm install
 ```
 
-### 4. Set up the Python gateway
+### 3. Set up the Python gateway
 
 ```bash
 cd ../../api-gateway
@@ -239,7 +239,7 @@ venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 5. Start all services
+### 4. Start all services
 
 On Windows:
 
@@ -278,7 +278,7 @@ cd ../frontend
 npm run dev
 ```
 
-### 6. Open the app
+### 5. Open the app
 
 ```
 http://localhost:5173
